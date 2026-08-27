@@ -44,7 +44,7 @@
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.2",
-    "@vitest/coverage-v8": "3.2.7",
+    "@vitest/coverage-v8": "4.1.11",
     "dependency-cruiser": "18.2.0",
     "eslint": "10.9.0",
     "typescript": "^5.9.2",
