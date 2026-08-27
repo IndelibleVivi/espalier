@@ -1,0 +1,257 @@
+name: Espalier CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: espalier-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+
+jobs:
+  verify:
+    name: Espalier / verify (Node ${{ matrix.label }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - node: 24.x
+            label: "24"
+            primary: true
+          - node: 26.x
+            label: "26"
+            primary: false
+    steps:
+      - name: Check out the tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TESTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - name: Install the locked dependency graph
+        run: npm ci --include=dev
+      - name: Reject whitespace errors in the tested range
+        shell: bash
+        run: |
+          if [[ "${BASE_SHA}" =~ ^[0-9a-f]{40}$ ]] && [[ ! "${BASE_SHA}" =~ ^0+$ ]] && git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            git diff --check "${BASE_SHA}...${TESTED_SHA}"
+          else
+            git diff --check "${TESTED_SHA}^" "${TESTED_SHA}"
+          fi
+      - name: Type-check
+        run: npm run typecheck
+      - name: Run the full test suite and write a machine receipt
+        shell: bash
+        env:
+          TEST_RECEIPT: artifacts/test-results/vitest-node-${{ matrix.label }}.json
+        run: |
+          mkdir -p artifacts/test-results
+          npm test -- --reporter=default --reporter=json --outputFile.json="${TEST_RECEIPT}"
+      - name: Build the canonical live Canvas on the minimum Node version
+        if: ${{ matrix.primary }}
+        run: npm run build -w @espalier/web
+      - name: Validate the canonical skill on the minimum Node version
+        if: ${{ matrix.primary }}
+        run: npm run check:skill
+      - name: Run the D1.5 scale and replay contract on the minimum Node version
+        if: ${{ matrix.primary }}
+        run: npm run stress:scale-replay
+      - name: Exercise the real service process on the development Node version
+        if: ${{ !matrix.primary }}
+        run: npm run smoke:process
+      - name: Upload the test receipt
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-summary-node-${{ matrix.label }}
+          path: artifacts/test-results/vitest-node-${{ matrix.label }}.json
+          if-no-files-found: error
+          retention-days: 14
+
+  architecture:
+    name: Espalier / architecture
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TESTED_SHA }}
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.x
+          cache: npm
+      - name: Install the locked dependency graph
+        run: npm ci --include=dev
+      - name: Run type-aware ESLint
+        run: npm run lint
+      - name: Enforce package and canonical-writer boundaries
+        run: npm run check:architecture
+
+  public-surface:
+    name: Espalier / public-surface
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TESTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.x
+          cache: npm
+      - name: Install the locked dependency graph
+        run: npm ci --include=dev
+      - name: Check tracked artifacts, paths, and commit identities
+        env:
+          PUBLIC_SURFACE_BASE_SHA: ${{ env.BASE_SHA }}
+        run: npm run check:public-surface
+      - name: Install pinned gitleaks and actionlint binaries
+        shell: bash
+        run: |
+          install -d "${RUNNER_TEMP}/espalier-ci-tools"
+          curl --fail --silent --show-error --location --output "${RUNNER_TEMP}/espalier-ci-tools/gitleaks.tar.gz" "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz"
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  ${RUNNER_TEMP}/espalier-ci-tools/gitleaks.tar.gz" | sha256sum --check
+          tar -xzf "${RUNNER_TEMP}/espalier-ci-tools/gitleaks.tar.gz" -C "${RUNNER_TEMP}/espalier-ci-tools" gitleaks
+          curl --fail --silent --show-error --location --output "${RUNNER_TEMP}/espalier-ci-tools/actionlint.tar.gz" "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz"
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  ${RUNNER_TEMP}/espalier-ci-tools/actionlint.tar.gz" | sha256sum --check
+          tar -xzf "${RUNNER_TEMP}/espalier-ci-tools/actionlint.tar.gz" -C "${RUNNER_TEMP}/espalier-ci-tools" actionlint
+      - name: Scan the tested tree and commit range with gitleaks
+        shell: bash
+        run: |
+          tracked_root="$(mktemp -d "${RUNNER_TEMP}/espalier-tracked-tree.XXXXXX")"
+          git archive --format=tar "${TESTED_SHA}" | tar -xf - -C "${tracked_root}"
+          "${RUNNER_TEMP}/espalier-ci-tools/gitleaks" dir "${tracked_root}" --no-banner --redact
+          if [[ "${BASE_SHA}" =~ ^[0-9a-f]{40}$ ]] && [[ ! "${BASE_SHA}" =~ ^0+$ ]] && git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            "${RUNNER_TEMP}/espalier-ci-tools/gitleaks" git . --no-banner --redact --log-opts="${BASE_SHA}..${TESTED_SHA}"
+          fi
+      - name: Validate workflow syntax with actionlint
+        run: "${RUNNER_TEMP}/espalier-ci-tools/actionlint"
+      - name: Install pinned zizmor
+        shell: bash
+        run: |
+          curl --fail --silent --show-error --location --output "${RUNNER_TEMP}/zizmor.whl" "https://files.pythonhosted.org/packages/b4/f0/dfa67018b76bc4f2f50e265e8cbd1293833d1b1de5f3f02fbbb7487ae9c6/zizmor-1.29.0-py3-none-manylinux_2_28_x86_64.whl"
+          echo "587b99c2e1b34575c6c8565c2bfde415ca8bc0310f5589f19bc948c8dea10a20  ${RUNNER_TEMP}/zizmor.whl" | sha256sum --check
+          python3 -m venv "${RUNNER_TEMP}/zizmor"
+          "${RUNNER_TEMP}/zizmor/bin/python" -m pip install --disable-pip-version-check --no-deps "${RUNNER_TEMP}/zizmor.whl"
+      - name: Audit workflow security with zizmor
+        run: "${RUNNER_TEMP}/zizmor/bin/zizmor --persona pedantic --min-severity low --offline .github"
+
+  coverage:
+    name: Espalier / coverage-ratchet
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TESTED_SHA }}
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.x
+          cache: npm
+      - name: Install the locked dependency graph
+        run: npm ci --include=dev
+      - name: Enforce canonical and deterministic-contract V8 coverage ratchets
+        run: npm run test:coverage
+      - name: Upload the coverage receipt
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-summary
+          path: coverage/coverage-summary.json
+          if-no-files-found: error
+          retention-days: 14
+
+  review-bundle:
+    name: Espalier / review-bundle
+    needs: [verify, architecture, public-surface, coverage]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TESTED_SHA }}
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.x
+          cache: npm
+      - name: Install the locked dependency graph
+        run: npm ci --include=dev
+      - name: Download test receipts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: test-summary-node-*
+          path: artifacts/ci-inputs/tests
+          merge-multiple: true
+      - name: Download the coverage receipt
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: coverage-summary
+          path: artifacts/ci-inputs/coverage
+      - name: Create and reopen the exact-commit review bundle
+        shell: bash
+        env:
+          CI_REQUIRED_JOBS_JSON: '{"verify":"${{ needs.verify.result }}","architecture":"${{ needs.architecture.result }}","public-surface":"${{ needs.public-surface.result }}","coverage":"${{ needs.coverage.result }}"}'
+        run: |
+          review_args=(
+            --commit "${TESTED_SHA}"
+            --output-dir artifacts/review-bundle
+            --coverage-summary artifacts/ci-inputs/coverage/coverage-summary.json
+          )
+          for summary in artifacts/ci-inputs/tests/*.json; do
+            review_args+=(--test-summary "${summary}")
+          done
+          npm run review:bundle -- "${review_args[@]}"
+      - name: Upload the exact-commit review bundle
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: espalier-review-${{ env.TESTED_SHA }}
+          path: artifacts/review-bundle/*
+          if-no-files-found: error
+          retention-days: 30
+
+  required:
+    name: Espalier / required
+    if: ${{ always() }}
+    needs: [verify, architecture, public-surface, coverage, review-bundle]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require every blocking CI lane
+        shell: bash
+        env:
+          VERIFY_RESULT: ${{ needs.verify.result }}
+          ARCHITECTURE_RESULT: ${{ needs.architecture.result }}
+          PUBLIC_SURFACE_RESULT: ${{ needs.public-surface.result }}
+          COVERAGE_RESULT: ${{ needs.coverage.result }}
+          REVIEW_BUNDLE_RESULT: ${{ needs.review-bundle.result }}
+        run: |
+          for result in "${VERIFY_RESULT}" "${ARCHITECTURE_RESULT}" "${PUBLIC_SURFACE_RESULT}" "${COVERAGE_RESULT}" "${REVIEW_BUNDLE_RESULT}"; do
+            [[ "${result}" == "success" ]] || exit 1
+          done

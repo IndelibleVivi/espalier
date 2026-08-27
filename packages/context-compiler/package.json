@@ -1,0 +1,11 @@
+{
+  "name": "@espalier/context-compiler",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@espalier/core": "0.1.0",
+    "@espalier/protocol": "0.1.0"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "name": "espalier",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "espalier": "./bin/espalier.mjs"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run typecheck && npm run build -w @espalier/web",
+    "dev:server": "tsx apps/server/src/index.ts",
+    "service:start": "tsx scripts/local-service.mts start",
+    "service:status": "tsx scripts/local-service.mts status",
+    "service:stop": "tsx scripts/local-service.mts stop",
+    "service:restart": "tsx scripts/local-service.mts restart",
+    "dev:web": "npm run dev -w @espalier/web",
+    "seed": "tsx apps/server/src/seed.ts",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "stress:scale-replay": "tsx packages/projections/src/scale-stressbench.cli.ts",
+    "typecheck": "tsc --noEmit",
+    "check:architecture": "depcruise --config dependency-cruiser.config.mjs packages apps scripts",
+    "check:skill": "tsx scripts/check-skill.mts",
+    "check:public-surface": "tsx scripts/check-public-surface.mts",
+    "check:public-ready": "tsx scripts/check-public-surface.mts --profile=public",
+    "smoke:process": "tsx scripts/smoke-local-service.mts",
+    "review:bundle": "tsx scripts/create-review-bundle.mts",
+    "check": "npm run typecheck && npm run lint && npm run check:architecture && npm test && npm run build -w @espalier/web && npm run check:skill && npm run check:public-surface",
+    "espalier": "tsx apps/cli/src/index.ts",
+    "install:codex": "tsx apps/cli/src/codex-install.ts"
+  },
+  "dependencies": {
+    "tsx": "^4.20.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "^24.3.0",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.2",
+    "@vitest/coverage-v8": "3.2.7",
+    "dependency-cruiser": "18.2.0",
+    "eslint": "10.9.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "8.67.0",
+    "vite": "^7.1.3",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "license": "SEE LICENSE IN LICENSING.md"
+}

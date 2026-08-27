@@ -1,0 +1,16 @@
+{
+  "name": "@espalier/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/server.ts",
+    "./paths": "./src/paths.ts"
+  },
+  "dependencies": {
+    "@espalier/context-compiler": "0.1.0",
+    "@espalier/core": "0.1.0",
+    "@espalier/projections": "0.1.0",
+    "@espalier/protocol": "0.1.0"
+  }
+}

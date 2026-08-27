@@ -1,0 +1,12 @@
+{
+  "name": "@espalier/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@espalier/adapters": "0.1.0",
+    "@espalier/client": "0.1.0",
+    "@espalier/core": "0.1.0",
+    "@espalier/protocol": "0.1.0"
+  }
+}

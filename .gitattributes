@@ -1,0 +1,2 @@
+# Normative specs are imported byte-for-byte and intentionally use Markdown hard breaks.
+docs/specs/*.md whitespace=-trailing-space

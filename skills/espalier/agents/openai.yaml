@@ -1,0 +1,4 @@
+interface:
+  display_name: "Espalier"
+  short_description: "Join enrolled work with bounded live context"
+  default_prompt: "Use $espalier to recover the enrolled project's bounded context and continue the exact tracked work."
