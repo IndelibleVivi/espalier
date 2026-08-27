@@ -52,7 +52,7 @@ jobs:
           if [[ "${BASE_SHA}" =~ ^[0-9a-f]{40}$ ]] && [[ ! "${BASE_SHA}" =~ ^0+$ ]] && git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
             git diff --check "${BASE_SHA}...${TESTED_SHA}"
           else
-            git diff --check "${TESTED_SHA}^" "${TESTED_SHA}"
+            git diff-tree --check --root --no-commit-id -r "${TESTED_SHA}"
           fi
       - name: Type-check
         run: npm run typecheck
@@ -147,7 +147,8 @@ jobs:
             "${RUNNER_TEMP}/espalier-ci-tools/gitleaks" git . --no-banner --redact --log-opts="${BASE_SHA}..${TESTED_SHA}"
           fi
       - name: Validate workflow syntax with actionlint
-        run: "${RUNNER_TEMP}/espalier-ci-tools/actionlint"
+        run: |
+          "${RUNNER_TEMP}/espalier-ci-tools/actionlint"
       - name: Install pinned zizmor
         shell: bash
         run: |
@@ -156,7 +157,8 @@ jobs:
           python3 -m venv "${RUNNER_TEMP}/zizmor"
           "${RUNNER_TEMP}/zizmor/bin/python" -m pip install --disable-pip-version-check --no-deps "${RUNNER_TEMP}/zizmor.whl"
       - name: Audit workflow security with zizmor
-        run: "${RUNNER_TEMP}/zizmor/bin/zizmor --persona pedantic --min-severity low --offline .github"
+        run: |
+          "${RUNNER_TEMP}/zizmor/bin/zizmor" --persona pedantic --min-severity low --offline .github
 
   coverage:
     name: Espalier / coverage-ratchet
