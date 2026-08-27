@@ -2,9 +2,13 @@
 
 简体中文 · [English](README.md)
 
+[![Espalier CI](https://github.com/IndelibleVivi/espalier/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/IndelibleVivi/espalier/actions/workflows/ci.yml)
+
 Espalier 是一个面向长期人机协作项目的 local-first 协调与权限语义层。它保存那些经常散落在 repo、聊天、issue tracker 与 agent memory 之间、却真正决定项目能否被可靠接续的少量持久语义：已批准目标、当前工作拓扑、Claim、Decision、Evidence、Handoff、Relation，以及有预算上限的返回上下文。
 
 它服务的是希望负责任地使用多个 agent / session 的项目 owner：不把机生成的内容自动变成 authority，不要求人阅读每一份全量报告，也不让决定背后的理由随着聊天窗口消失。
+
+一个具体瞬间：一个 agent session 正在改 architecture，另一个在改 renderer；它们的 Claim 暴露出重叠的 semantic / repository surface，而不是假装已经自动 merge。任一 session 离开时，Handoff 都让下一轮 session 从一份 900-token brief 恢复到精确 Work，不必 replay 整段聊天。
 
 > **当前状态：** developer preview，已可进行有边界的本地 dogfood。确定性的 Core、CLI、Codex Skill、loopback service、projection、canonical live Canvas reader，以及第一轮真实单 agent checkpoint / handoff 已经跑通。Fresh-session 与 multi-agent dogfood、远程身份验证部署、production-grade Human Surface evidence 和最终产品验收仍未完成。
 

@@ -123,10 +123,16 @@ jobs:
           cache: npm
       - name: Install the locked dependency graph
         run: npm ci --include=dev
-      - name: Check tracked artifacts, paths, and commit identities
+      - name: Check tracked artifacts, paths, commit identities, and publication state
         env:
           PUBLIC_SURFACE_BASE_SHA: ${{ env.BASE_SHA }}
-        run: npm run check:public-surface
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REPOSITORY}" == "IndelibleVivi/espalier" ]]; then
+            npm run check:public-ready
+          else
+            npm run check:public-surface
+          fi
       - name: Install pinned gitleaks and actionlint binaries
         shell: bash
         run: |

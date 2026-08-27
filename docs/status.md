@@ -2,7 +2,7 @@
 
 [简体中文](zh-CN/status.md) · English
 
-Last reviewed: 2026-08-27.
+Last reviewed: 2026-08-28.
 
 Espalier is a developer preview and local dogfood candidate, not a finished public release. “Implemented,” “locally verified,” “packaged,” “installed,” “running,” “published,” and “owner accepted” are separate states.
 
@@ -22,8 +22,8 @@ Espalier is a developer preview and local dogfood candidate, not a finished publ
 | Export/restore | Implemented and tested for an empty authority domain | Restore requires explicit confirmation and graph revalidation |
 | Scale projection fixtures | 500/5,000-object headless contract stress implemented | Not Browser/GPU production performance evidence |
 | Real dogfood | First bounded single-agent checkpoint/handoff loop observed | Fresh-session, second-agent, parallel/Lane pressure, and longer-task metrics remain open |
-| CI/public-surface foundation | Integrated candidate under fresh combined-line verification | Hosted Node 24/26 first run and branch protection remain separate gates |
-| Public repository | Not released | Clean history/content, rights/license, secret scan, and owner publication gate remain |
+| CI/public-surface foundation | Hosted Node 24/26, public profile, coverage, and exact-commit review gates passed on the initial public HEAD | Required branch policy applies the same gates to future public updates; green CI is not product acceptance |
+| Public source repository | Published as an authorized clean source projection on 2026-08-27 | No tagged product release or general packaged distribution is claimed |
 
 ## Open product gates
 
@@ -32,6 +32,6 @@ Espalier is a developer preview and local dogfood candidate, not a finished publ
 3. Complete keyboard/screen-reader/forced-color/physical-gesture/performance evidence for the canonical Canvas and obtain owner aesthetic/product acceptance.
 4. Add authenticated identity and TLS before any non-loopback or mutually untrusted-principal deployment.
 5. Add scheduled retention, attachment storage, cross-device personal continuity, and packaged distribution only with concrete consumers.
-6. Produce a clean public tree, complete history/secret/privacy/rights review, select licenses by material class, and receive explicit publication approval.
+6. Apply the same clean-tree privacy/secret/rights and exact-commit CI gates to every future public update; keep tagged product release separate from source publication.
 
 Internal project-specific experiments and private working continuity may be ahead of this matrix. They are evidence for development, not part of the public support contract.

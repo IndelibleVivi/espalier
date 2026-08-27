@@ -28,7 +28,7 @@ Portable export 包含 accepted project history 与 current graph state。即使
 
 ## 报告安全问题
 
-不要在 public issue 中放 exploit detail、secret、私人项目数据或 database export。GitHub private Security Advisory reporting 启用后，应使用该路径。在公开 reporting channel 被明确发布前，请通过已经建立的私人渠道联系 repo owner。
+不要在 public issue 中放 exploit detail、secret、私人项目数据或 database export。请[通过 GitHub 私密报告 vulnerability](https://github.com/IndelibleVivi/espalier/security/advisories/new)；本 repo 已启用 private vulnerability reporting。
 
 报告应包含受影响 commit/version、本地 deployment shape、复现步骤、expected/observed boundary，以及能够验证问题的最小 redacted evidence。
 

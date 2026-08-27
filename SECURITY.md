@@ -28,7 +28,7 @@ Portable exports contain accepted project history and current graph state. Treat
 
 ## Reporting a vulnerability
 
-Do not open a public issue containing exploit details, secrets, private project data, or a database export. Use the repository's private GitHub Security Advisory reporting path once it is enabled. Until a public reporting channel is explicitly published, contact the repository owner through an already-established private channel.
+Do not open a public issue containing exploit details, secrets, private project data, or a database export. [Report the vulnerability privately through GitHub](https://github.com/IndelibleVivi/espalier/security/advisories/new); private vulnerability reporting is enabled for this repository.
 
 Include the affected commit/version, local deployment shape, reproduction steps, expected/observed boundary, and the smallest redacted evidence needed to verify the issue.
 

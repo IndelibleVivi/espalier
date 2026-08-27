@@ -2,9 +2,13 @@
 
 [简体中文](README.zh-CN.md) · English
 
+[![Espalier CI](https://github.com/IndelibleVivi/espalier/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/IndelibleVivi/espalier/actions/workflows/ci.yml)
+
 Espalier is a local-first coordination and authority layer for long-running human–agent projects. It keeps the small amount of durable project meaning that repositories, chats, issue trackers, and agent memory usually lose between them: the approved goal, current work topology, claims, decisions, evidence, handoffs, relations, and bounded return context.
 
 It is designed for a responsible owner who wants several agents or sessions to work without turning machine output into authority, reading every full report, or losing the reasons behind a decision.
+
+A concrete moment: one agent session is changing architecture while another changes the renderer. Their Claims expose an overlapping semantic or repository surface instead of silently pretending to merge it. When either session leaves, its Handoff lets the next session recover the exact Work from a 900-token brief rather than replaying the full chat.
 
 > **Status:** developer preview, ready for bounded local dogfood. The deterministic Core, CLI, Codex Skill, loopback service, projections, canonical live Canvas reader, and first real single-agent checkpoint/handoff loop are working. Fresh-session and multi-agent dogfood, authenticated remote deployment, production-grade Human Surface evidence, and final product acceptance are still open.
 
