@@ -170,6 +170,15 @@ export function scanPublicSurface(entries: PublicSurfaceEntry[], profile: Public
     }
     if (profile === "public") {
       if (/\bprivate GitHub repository\b/i.test(text)) findings.push({ path: normalizedPath, reason: "public profile still describes the repository as private" });
+      if (/\|\s*Public repository\s*\|\s*(?:Not released|未\s*release)\s*\|/i.test(text)) {
+        findings.push({ path: normalizedPath, reason: "public profile still marks the public repository as unpublished" });
+      }
+      if (/\bPublication still requires\b/i.test(text) || /\bProduce a clean public tree\b/i.test(text) || /生成\s+clean public tree/i.test(text)) {
+        findings.push({ path: normalizedPath, reason: "public profile still describes initial publication as a future gate" });
+      }
+      if (/\bHosted Node 24\/26 first run\b/i.test(text)) {
+        findings.push({ path: normalizedPath, reason: "public profile still describes hosted CI as an unrun gate" });
+      }
     }
   }
 

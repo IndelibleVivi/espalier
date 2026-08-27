@@ -36,6 +36,25 @@ describe("repo-local CI foundation parsers", () => {
     expect(findings.some((finding) => finding.path === "docs/public.md")).toBe(false);
   });
 
+  it("rejects pre-public publication state only in the public profile", () => {
+    const staleEntries = [
+      { path: "docs/status.md", content: Buffer.from(["| Public repository |", "Not released", "| Publication gate remains |"].join(" ")) },
+      { path: "docs/zh-CN/status.md", content: Buffer.from(["| Public repository |", "未 release", "| publication gate 未闭合 |"].join(" ")) },
+      { path: "PUBLIC_SOURCE.md", content: Buffer.from(["Publication", "still requires", "a clean-tree review."].join(" ")) },
+    ];
+
+    expect(scanPublicSurface(staleEntries, "incubator")).toEqual([]);
+    expect(scanPublicSurface(staleEntries, "public").map((finding) => finding.reason)).toEqual(expect.arrayContaining([
+      "public profile still marks the public repository as unpublished",
+      "public profile still describes initial publication as a future gate",
+    ]));
+
+    expect(scanPublicSurface([
+      { path: "docs/status.md", content: Buffer.from("| Public source repository | Published developer preview | No tagged product release |") },
+      { path: "PUBLIC_SOURCE.md", content: Buffer.from("Future public updates remain subject to the same boundary.") },
+    ], "public")).toEqual([]);
+  });
+
   it("reads and binds the exact ZIP comment", () => {
     const comment = "b83dbd605a2597785a5251f2d7f7eedf899ffeb9";
     const header = Buffer.alloc(22);

@@ -2,7 +2,7 @@
 
 简体中文 · [English](../status.md)
 
-最后复核：2026-08-27。
+最后复核：2026-08-28。
 
 Espalier 是 developer preview 与 local dogfood candidate，不是 finished public release。Implemented、locally verified、packaged、installed、running、published 与 owner accepted 是不同状态。
 
@@ -22,8 +22,8 @@ Espalier 是 developer preview 与 local dogfood candidate，不是 finished pub
 | Export/restore | empty-domain path implemented + tests | 显式 confirmation + graph revalidation |
 | Scale projection fixtures | 500/5,000-object headless stress | 不是 Browser/GPU production performance evidence |
 | Real dogfood | 首次 bounded single-agent checkpoint/handoff 已观察 | fresh-session、second agent、parallel/Lane pressure 与长任务 metrics 仍 open |
-| CI/public-surface foundation | combined candidate，正在进行 fresh combined-line verification | hosted Node 24/26 first run 与 branch protection 是独立 gate |
-| Public repository | 未 release | clean history/content、rights/license、secret scan 与 owner publication gate 未闭合 |
+| CI/public-surface foundation | initial public HEAD 已通过 hosted Node 24/26、public profile、coverage 与 exact-commit review gates | required branch policy 对后续 public update 继续执行同一组 gates；绿色 CI 不是 product acceptance |
+| Public source repository | 已于 2026-08-27 作为 owner-authorized clean source projection 发布 | 不声称已有 tagged product release 或通用 packaged distribution |
 
 ## Open product gates
 
@@ -32,6 +32,6 @@ Espalier 是 developer preview 与 local dogfood candidate，不是 finished pub
 3. 完成 canonical Canvas 的 keyboard/screen-reader/forced-color/physical-gesture/performance evidence，并获得 owner product/aesthetic acceptance。
 4. 任何 non-loopback / mutually untrusted principal 部署前实现 authenticated identity + TLS。
 5. 只在 concrete consumer 存在时添加 scheduled retention、attachment storage、cross-device personal continuity 与 packaged distribution。
-6. 生成 clean public tree，完成 history/secret/privacy/rights audit，按 material class 选择 licenses，并获得 explicit publication approval。
+6. 每次后续 public update 继续执行相同的 clean-tree privacy/secret/rights 与 exact-commit CI gates；tagged product release 与 source publication 保持分离。
 
 内部 project-specific experiment 与 private working continuity 可能领先于这张表；它们是开发 evidence，不属于 public support contract。
