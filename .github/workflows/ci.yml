@@ -152,10 +152,11 @@ jobs:
       - name: Install pinned zizmor
         shell: bash
         run: |
-          curl --fail --silent --show-error --location --output "${RUNNER_TEMP}/zizmor.whl" "https://files.pythonhosted.org/packages/b4/f0/dfa67018b76bc4f2f50e265e8cbd1293833d1b1de5f3f02fbbb7487ae9c6/zizmor-1.29.0-py3-none-manylinux_2_28_x86_64.whl"
-          echo "587b99c2e1b34575c6c8565c2bfde415ca8bc0310f5589f19bc948c8dea10a20  ${RUNNER_TEMP}/zizmor.whl" | sha256sum --check
+          zizmor_wheel="${RUNNER_TEMP}/zizmor-1.29.0-py3-none-manylinux_2_28_x86_64.whl"
+          curl --fail --silent --show-error --location --output "${zizmor_wheel}" "https://files.pythonhosted.org/packages/b4/f0/dfa67018b76bc4f2f50e265e8cbd1293833d1b1de5f3f02fbbb7487ae9c6/zizmor-1.29.0-py3-none-manylinux_2_28_x86_64.whl"
+          echo "587b99c2e1b34575c6c8565c2bfde415ca8bc0310f5589f19bc948c8dea10a20  ${zizmor_wheel}" | sha256sum --check
           python3 -m venv "${RUNNER_TEMP}/zizmor"
-          "${RUNNER_TEMP}/zizmor/bin/python" -m pip install --disable-pip-version-check --no-deps "${RUNNER_TEMP}/zizmor.whl"
+          "${RUNNER_TEMP}/zizmor/bin/python" -m pip install --disable-pip-version-check --no-deps "${zizmor_wheel}"
       - name: Audit workflow security with zizmor
         run: |
           "${RUNNER_TEMP}/zizmor/bin/zizmor" --persona pedantic --min-severity low --offline .github
