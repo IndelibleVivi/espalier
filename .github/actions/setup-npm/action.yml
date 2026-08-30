@@ -1,0 +1,23 @@
+name: Set up checksum-pinned npm
+description: Put the repository-supported npm release on PATH from a verified registry archive.
+
+runs:
+  using: composite
+  steps:
+    - name: Download and verify npm
+      shell: bash
+      env:
+        ESPALIER_NPM_VERSION: "11.19.1"
+        ESPALIER_NPM_SHA256: "9f58bff01604cb1b14008fef14dceb14d836a49225e45c6c2e37de3be3e707f0"
+      run: |
+        npm_root="${RUNNER_TEMP}/espalier-npm-${ESPALIER_NPM_VERSION}"
+        npm_package_root="${npm_root}/lib/node_modules/npm"
+        npm_archive="${RUNNER_TEMP}/npm-${ESPALIER_NPM_VERSION}.tgz"
+        node_bin="$(dirname "$(command -v node)")"
+        curl --fail --silent --show-error --location --output "${npm_archive}" "https://registry.npmjs.org/npm/-/npm-${ESPALIER_NPM_VERSION}.tgz"
+        echo "${ESPALIER_NPM_SHA256}  ${npm_archive}" | shasum -a 256 --check
+        install -d "${npm_package_root}"
+        tar -xzf "${npm_archive}" --strip-components=1 -C "${npm_package_root}"
+        ln -sf "${npm_package_root}/bin/npm-cli.js" "${node_bin}/npm"
+        ln -sf "${npm_package_root}/bin/npx-cli.js" "${node_bin}/npx"
+        [[ "$(npm --version)" == "${ESPALIER_NPM_VERSION}" ]]

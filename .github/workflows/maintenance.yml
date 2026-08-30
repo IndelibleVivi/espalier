@@ -28,10 +28,7 @@ jobs:
           node-version: 24.0.0
           cache: npm
       - name: Install the supported npm version
-        shell: bash
-        run: |
-          npm install --global npm@11.19.1
-          [[ "$(npm --version)" == "11.19.1" ]]
+        uses: ./.github/actions/setup-npm
       - name: Install the locked dependency graph
         id: install
         run: npm ci --include=dev

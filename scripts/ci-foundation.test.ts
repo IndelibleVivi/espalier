@@ -8,6 +8,24 @@ import { readZipComment, scanPublicSurface, sha256, summarizeCoverageJson, summa
 const repositoryRoot = resolve(import.meta.dirname, "..");
 
 describe("repo-local CI foundation parsers", () => {
+  it("bootstraps the supported npm from one checksum-pinned local action", () => {
+    const workflows = [".github/workflows/ci.yml", ".github/workflows/maintenance.yml"]
+      .map((path) => readFileSync(resolve(repositoryRoot, path), "utf8"))
+      .join("\n");
+    const setupNodeCount = workflows.match(/uses: actions\/setup-node@/g)?.length ?? 0;
+    const setupNpmCount = workflows.match(/uses: \.\/\.github\/actions\/setup-npm/g)?.length ?? 0;
+    const setupNpmAction = readFileSync(resolve(repositoryRoot, ".github/actions/setup-npm/action.yml"), "utf8");
+
+    expect(setupNodeCount).toBeGreaterThan(0);
+    expect(setupNpmCount).toBe(setupNodeCount);
+    expect(workflows).not.toMatch(/npm install --global/);
+    expect(setupNpmAction).toContain('ESPALIER_NPM_VERSION: "11.19.1"');
+    expect(setupNpmAction).toContain('ESPALIER_NPM_SHA256: "9f58bff01604cb1b14008fef14dceb14d836a49225e45c6c2e37de3be3e707f0"');
+    expect(setupNpmAction).toContain("https://registry.npmjs.org/npm/-/npm-${ESPALIER_NPM_VERSION}.tgz");
+    expect(setupNpmAction).not.toContain("GITHUB_PATH");
+    expect(setupNpmAction).toContain('node_bin="$(dirname "$(command -v node)")"');
+  });
+
   it("accepts the canonical skill shape and rejects authority-breaking metadata or TODOs", () => {
     const valid = validateSkillMarkdown("skills/espalier/SKILL.md", `---\nname: espalier\ndescription: Keep coordination sparse and repo authority intact.\n---\n\n# Espalier\n\nAct only at durable boundaries.\n`);
     expect(valid.errors).toEqual([]);

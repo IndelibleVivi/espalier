@@ -49,10 +49,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - name: Install the supported npm version
-        shell: bash
-        run: |
-          npm install --global npm@11.19.1
-          [[ "$(npm --version)" == "11.19.1" ]]
+        uses: ./.github/actions/setup-npm
       - name: Install the locked dependency graph
         run: npm ci --include=dev
       - name: Reject whitespace errors in the tested range
@@ -108,10 +105,7 @@ jobs:
           node-version: 24.0.0
           cache: npm
       - name: Install the supported npm version
-        shell: bash
-        run: |
-          npm install --global npm@11.19.1
-          [[ "$(npm --version)" == "11.19.1" ]]
+        uses: ./.github/actions/setup-npm
       - name: Install the locked dependency graph
         run: npm ci --include=dev
       - name: Run type-aware ESLint
@@ -136,10 +130,7 @@ jobs:
           node-version: 24.0.0
           cache: npm
       - name: Install the supported npm version
-        shell: bash
-        run: |
-          npm install --global npm@11.19.1
-          [[ "$(npm --version)" == "11.19.1" ]]
+        uses: ./.github/actions/setup-npm
       - name: Install the locked dependency graph
         run: npm ci --include=dev
       - name: Check tracked artifacts, paths, commit identities, and publication state
@@ -211,10 +202,7 @@ jobs:
           node-version: 24.0.0
           cache: npm
       - name: Install the supported npm version
-        shell: bash
-        run: |
-          npm install --global npm@11.19.1
-          [[ "$(npm --version)" == "11.19.1" ]]
+        uses: ./.github/actions/setup-npm
       - name: Install the locked dependency graph
         run: npm ci --include=dev
       - name: Enforce canonical and deterministic-contract V8 coverage ratchets
@@ -243,10 +231,7 @@ jobs:
           node-version: 24.0.0
           cache: npm
       - name: Install the supported npm version
-        shell: bash
-        run: |
-          npm install --global npm@11.19.1
-          [[ "$(npm --version)" == "11.19.1" ]]
+        uses: ./.github/actions/setup-npm
       - name: Install the locked dependency graph
         run: npm ci --include=dev
       - name: Install the required Chromium runtime
@@ -300,10 +285,7 @@ jobs:
           node-version: 24.0.0
           cache: npm
       - name: Install the supported npm version
-        shell: bash
-        run: |
-          npm install --global npm@11.19.1
-          [[ "$(npm --version)" == "11.19.1" ]]
+        uses: ./.github/actions/setup-npm
       - name: Install the locked dependency graph
         run: npm ci --include=dev
       - name: Build the supported source/runtime path
@@ -347,10 +329,7 @@ jobs:
           node-version: 24.0.0
           cache: npm
       - name: Install the supported npm version
-        shell: bash
-        run: |
-          npm install --global npm@11.19.1
-          [[ "$(npm --version)" == "11.19.1" ]]
+        uses: ./.github/actions/setup-npm
       - name: Install the locked dependency graph
         run: npm ci --include=dev
       - name: Download test receipts
