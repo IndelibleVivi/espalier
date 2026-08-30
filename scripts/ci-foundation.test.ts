@@ -107,7 +107,7 @@ describe("repo-local CI foundation parsers", () => {
       expect(JSON.parse(readFileSync(receiptPath, "utf8"))).toMatchObject({
         format: "espalier.public-surface-receipt/1",
         profile: "public",
-        candidate_file_count: 6,
+        candidate_file_count: 7,
         finding_count: 0,
         commit_identity_count: 1,
         checks: { paths: "passed", text_privacy: "passed", publication_state: "passed", commit_identities: "passed" },

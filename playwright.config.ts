@@ -15,12 +15,20 @@ export default defineConfig({
   outputDir: process.env.PLAYWRIGHT_OUTPUT_DIR ?? "artifacts/browser-smoke/test-results",
   use: {
     baseURL: process.env.ESPALIER_BROWSER_BASE_URL ?? "http://127.0.0.1:4317",
-    viewport: { width: 1280, height: 720 },
     screenshot: "only-on-failure",
     trace: "on-first-retry",
     video: "off",
   },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    {
+      name: "chromium-desktop",
+      grep: /@desktop/,
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 720 } },
+    },
+    {
+      name: "chromium-mobile",
+      grep: /@mobile/,
+      use: { ...devices["Pixel 5"], viewport: { width: 390, height: 844 } },
+    },
   ],
 });

@@ -46,7 +46,7 @@ npm run smoke:managed-service
 npm run stress:scale-replay
 ```
 
-Use Node.js 24.0.0+ and npm 11.19.1+; CI pins npm 11.19.1 and rejects dependency install scripts absent from `package.json#allowScripts`. Install the pinned Playwright Chromium before `smoke:browser`. Rendered Web changes additionally require a real browser pass: page identity, meaningful DOM, no framework overlay, console health, target-flow interaction, desktop/mobile behavior, keyboard/accessibility evidence, and non-color semantic review.
+Use Node.js 24.0.0+ and npm 11.19.1+; CI pins npm 11.19.1 and rejects dependency install scripts absent from `package.json#allowScripts`. Install the pinned Playwright Chromium before `smoke:browser`. Its required receipt covers a 1280×720 desktop mutation/SSE path and a 390×844 mobile keyboard path through locale, Canvas selection, Inspector close, and text/ARIA state semantics. Rendered Web changes still require blast-radius-appropriate real-browser review; this bounded smoke is not complete keyboard, screen-reader, forced-color, performance, visual, release, or owner acceptance evidence.
 
 ## Documentation and publication
 

@@ -28,7 +28,7 @@ npm run smoke:managed-service
 npm run stress:scale-replay
 ```
 
-Use Node.js 24.0.0 or newer and npm 11.19.1 or newer; CI installs the repository-pinned npm 11.19.1. Run the narrow relevant test while implementing, then the complete gate appropriate to the affected contract. `smoke:browser` installs no browser by itself, so install its pinned Chromium once after `npm ci`. Rendered Web changes additionally need real browser inspection at desktop and mobile widths, meaningful DOM, console health, target-flow interaction, keyboard/accessibility evidence, and non-color semantic review.
+Use Node.js 24.0.0 or newer and npm 11.19.1 or newer; CI installs the repository-pinned npm 11.19.1. Run the narrow relevant test while implementing, then the complete gate appropriate to the affected contract. `smoke:browser` installs no browser by itself, so install its pinned Chromium once after `npm ci`. It covers the required desktop mutation/SSE path and a bounded mobile keyboard/text/ARIA path. Rendered Web changes still need blast-radius-appropriate real-browser inspection; complete keyboard, screen-reader, forced-color, performance, and owner acceptance remain separate gates.
 
 ## Change shape
 

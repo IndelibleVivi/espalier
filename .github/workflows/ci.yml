@@ -238,7 +238,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Build the canonical live Canvas
         run: npm run build -w @espalier/web
-      - name: Exercise the real Orchard browser path and SSE refresh
+      - name: Exercise desktop mutation and mobile keyboard paths in Chromium
         run: npm run smoke:browser
       - name: Upload the browser machine receipt
         if: ${{ always() }}
@@ -254,7 +254,8 @@ jobs:
         with:
           name: browser-failure-${{ env.TEST_SHA }}
           path: |
-            artifacts/browser-smoke/browser-console.json
+            artifacts/browser-smoke/browser-console-*.json
+            artifacts/browser-smoke/browser-*-summary.json
             artifacts/browser-smoke/playwright-results.json
             artifacts/browser-smoke/service.log
             artifacts/browser-smoke/test-results

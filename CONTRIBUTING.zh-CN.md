@@ -28,7 +28,7 @@ npm run smoke:managed-service
 npm run stress:scale-replay
 ```
 
-使用 Node.js 24.0.0 或更新版本与 npm 11.19.1 或更新版本；CI 会安装 repo pin 的 npm 11.19.1。施工时先跑最窄相关 test，再跑与 blast radius 匹配的完整 gate。`smoke:browser` 不会自己安装 browser，因此 `npm ci` 后需要先安装一次 pinned Chromium。Rendered Web change 还需要真实 browser 的 desktop/mobile 检查、meaningful DOM、console health、target-flow interaction、keyboard/accessibility evidence 与 non-color semantic review。
+使用 Node.js 24.0.0 或更新版本与 npm 11.19.1 或更新版本；CI 会安装 repo pin 的 npm 11.19.1。施工时先跑最窄相关 test，再跑与 blast radius 匹配的完整 gate。`smoke:browser` 不会自己安装 browser，因此 `npm ci` 后需要先安装一次 pinned Chromium。它覆盖 required desktop mutation/SSE path 与一条 bounded mobile keyboard/text/ARIA path。Rendered Web change 仍需按 blast radius 做真实 browser review；complete keyboard、screen-reader、forced-color、performance 与 owner acceptance 是分开的 gates。
 
 ## Change shape
 

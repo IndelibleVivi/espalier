@@ -1,13 +1,18 @@
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
-import { closeSync, existsSync, mkdirSync, mkdtempSync, openSync, rmSync, writeFileSync } from "node:fs";
+import { closeSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { cleanupBrowserSmoke } from "./lib/browser-smoke-cleanup.mjs";
 
 const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
 const artifactDirectory = resolve(repositoryRoot, "artifacts/browser-smoke");
 const summaryPath = resolve(artifactDirectory, "browser-summary.json");
+const profilePaths = {
+  desktop: resolve(artifactDirectory, "browser-desktop-summary.json"),
+  mobile: resolve(artifactDirectory, "browser-mobile-summary.json"),
+} as const;
 const serviceLogPath = resolve(artifactDirectory, "service.log");
 const temporaryRoot = mkdtempSync(join(tmpdir(), "espalier-browser-空 格-"));
 const playwrightBrowsersPath = process.env.PLAYWRIGHT_BROWSERS_PATH ?? defaultPlaywrightBrowsersPath();
@@ -15,6 +20,7 @@ let service: ChildProcess | undefined;
 
 mkdirSync(artifactDirectory, { recursive: true });
 rmSync(summaryPath, { force: true });
+for (const profilePath of Object.values(profilePaths)) rmSync(profilePath, { force: true });
 try {
   const port = await availablePort();
   const dataDirectory = resolve(temporaryRoot, "应用 数据");
@@ -58,11 +64,21 @@ try {
   });
   if (playwright.error) throw playwright.error;
   if (playwright.status !== 0) throw new Error(`Playwright browser smoke failed with exit code ${playwright.status ?? "unknown"}`);
-  if (!existsSync(summaryPath)) throw new Error("Playwright completed without a browser-summary receipt");
+  const profiles = {
+    desktop: readPassedProfile(profilePaths.desktop, "desktop"),
+    mobile: readPassedProfile(profilePaths.mobile, "mobile"),
+  };
+  writeFileSync(summaryPath, `${JSON.stringify({
+    format: "espalier.browser-smoke-receipt/2",
+    status: "passed",
+    browser: "chromium",
+    project_id: "orchard",
+    profiles,
+  }, null, 2)}\n`);
 } catch (error) {
   if (!existsSync(summaryPath)) {
     writeFileSync(summaryPath, `${JSON.stringify({
-      format: "espalier.browser-smoke-receipt/1",
+      format: "espalier.browser-smoke-receipt/2",
       status: "failed",
       browser: "chromium",
       project_id: "orchard",
@@ -71,11 +87,16 @@ try {
   }
   throw error;
 } finally {
-  if (service && service.exitCode === null) {
-    service.kill("SIGTERM");
-    await waitForExit(service, 5_000);
+  await cleanupBrowserSmoke(service, temporaryRoot);
+}
+
+function readPassedProfile(path: string, expectedProfile: "desktop" | "mobile"): Record<string, unknown> {
+  if (!existsSync(path)) throw new Error(`Playwright completed without the ${expectedProfile} browser profile receipt`);
+  const receipt = JSON.parse(readFileSync(path, "utf8")) as Record<string, unknown>;
+  if (receipt.format !== "espalier.browser-smoke-profile-receipt/1" || receipt.status !== "passed" || receipt.profile !== expectedProfile) {
+    throw new Error(`Invalid ${expectedProfile} browser profile receipt: ${JSON.stringify(receipt)}`);
   }
-  rmSync(temporaryRoot, { recursive: true, force: true });
+  return receipt;
 }
 
 function defaultPlaywrightBrowsersPath(): string {
@@ -109,13 +130,5 @@ function availablePort(): Promise<number> {
       if (!address || typeof address === "string") { server.close(); reject(new Error("Unable to reserve a loopback port")); return; }
       server.close((error) => error ? reject(error) : resolvePort(address.port));
     });
-  });
-}
-
-function waitForExit(process_: ChildProcess, timeoutMs: number): Promise<void> {
-  if (process_.exitCode !== null) return Promise.resolve();
-  return new Promise((resolveExit, reject) => {
-    const timeout = setTimeout(() => reject(new Error("Browser-smoke service did not stop after SIGTERM")), timeoutMs);
-    process_.once("exit", () => { clearTimeout(timeout); resolveExit(); });
   });
 }

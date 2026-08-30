@@ -35,7 +35,7 @@ describe("review bundle provenance", () => {
       const publicSummaryPath = join(temporaryRoot, "public-surface.json");
       writeFileSync(publicSummaryPath, `${JSON.stringify({ format: "espalier.public-surface-receipt/1", finding_count: 0 })}\n`);
       const browserSummaryPath = join(temporaryRoot, "browser-summary.json");
-      writeFileSync(browserSummaryPath, `${JSON.stringify({ format: "espalier.browser-smoke-receipt/1", status: "passed" })}\n`);
+      writeFileSync(browserSummaryPath, `${JSON.stringify({ format: "espalier.browser-smoke-receipt/2", status: "passed" })}\n`);
       const managedSummaryPath = join(temporaryRoot, "managed-service-macos.json");
       writeFileSync(managedSummaryPath, `${JSON.stringify({ format: "espalier.managed-service-receipt/1", status: "passed", platform: "macos" })}\n`);
       const outputDirectory = join(temporaryRoot, "bundle");
@@ -60,7 +60,7 @@ describe("review bundle provenance", () => {
         tested: { commit_sha: commit, tree_sha: tree, event: "manifest-test" },
         source_archive: { zip_comment: commit },
         public_surface_summary: { format: "espalier.public-surface-receipt/1", finding_count: 0 },
-        browser_summary: { format: "espalier.browser-smoke-receipt/1", status: "passed" },
+        browser_summary: { format: "espalier.browser-smoke-receipt/2", status: "passed" },
         managed_service_summaries: [{ format: "espalier.managed-service-receipt/1", status: "passed", platform: "macos" }],
       });
       expect(manifest).not.toHaveProperty("commit_sha");
