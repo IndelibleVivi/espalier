@@ -13,6 +13,19 @@ updates:
     groups:
       npm-patch-and-minor:
         update-types: [patch, minor]
+      vitest-major:
+        patterns:
+          - vitest
+          - "@vitest/*"
+        update-types: [major]
+      vite-major:
+        patterns:
+          - vite
+          - "@vitejs/*"
+        update-types: [major]
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:

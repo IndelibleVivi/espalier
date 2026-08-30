@@ -126,7 +126,7 @@ export function ProgrammeCanvas({ layout, locale, selectedRef, initialCamera, on
   const routeByRef = useMemo(() => new Map(layout.routes.map((route) => [route.ref, route])), [layout.routes]);
 
   return (
-    <section className="programme-canvas" aria-label={text.canvas}>
+    <section className="programme-canvas" data-testid="programme-canvas" aria-label={text.canvas}>
       <div
         ref={rootRef}
         className="canvas-viewport"
@@ -161,8 +161,10 @@ export function ProgrammeCanvas({ layout, locale, selectedRef, initialCamera, on
               type="button"
               key={`${edge.ref}:label`}
               className={`relation-tag${selectedRef === edge.ref ? " selected" : ""}`}
+              data-testid="canvas-relation"
               style={{ left: edge.label_x, top: edge.label_y }}
               onClick={(event) => { event.stopPropagation(); onSelect(edge.ref); }}
+              aria-pressed={selectedRef === edge.ref}
               aria-label={`${text.relations}: ${text.relationLabel(edge.relation_type)}${edge.change_reasons.length ? `, ${edge.change_reasons.map((reason) => changeReasonLabel(reason, locale)).join(", ")}` : ""}`}
             >{edge.change_reasons.length ? "Δ " : ""}{text.relationLabel(edge.relation_type)}</button>
           ))}
@@ -210,6 +212,7 @@ export function ProgrammeCanvas({ layout, locale, selectedRef, initialCamera, on
                 data-ref={node.ref}
                 data-located={node.unlocated ? "false" : "true"}
                 data-disclosure={disclosure}
+                aria-pressed={selectedRef === node.ref}
                 aria-label={`${label}, ${state?.accessible ?? stateLabel(node.state, locale)}${node.operator ? `, ${text.operator}: ${node.operator.principal_id}` : ""}${changes.length ? `, ${changes.map((reason) => changeReasonLabel(reason, locale)).join(", ")}` : ""}${attention.length ? `, ${text.attention} ${attention.length}` : ""}`}
                 title={node.title}
               >

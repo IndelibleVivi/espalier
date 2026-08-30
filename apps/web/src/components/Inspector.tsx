@@ -42,7 +42,7 @@ export function Inspector({ projectId, layout, locale, selectedRef, projectionRe
     }
   };
   return (
-    <aside id="espalier-inspector" className="inspector-rail" aria-label={text.inspector}>
+    <aside id="espalier-inspector" className="inspector-rail" data-testid="inspector" aria-label={text.inspector}>
       <div className="rail-heading"><span>{text.inspector}</span>{onClose ? <button type="button" onClick={onClose} aria-label={text.close}>×</button> : null}</div>
       {!selectedRef ? <p className="inspector-empty">{text.noSelection}</p> : (
         <div className="inspector-content">

@@ -2,7 +2,7 @@
 
 简体中文 · [English](../status.md)
 
-最后复核：2026-08-28。
+最后复核：2026-08-30。
 
 Espalier 是 developer preview 与 local dogfood candidate，不是 finished public release。Implemented、locally verified、packaged、installed、running、published 与 owner accepted 是不同状态。
 
@@ -13,7 +13,7 @@ Espalier 是 developer preview 与 local dogfood candidate，不是 finished pub
 | SQLite persistence / replay | implemented + local tests | 每 Project 一个 writable service；不跨 host sync writable DB |
 | Context Compiler | implemented + local tests | deterministic bounded selection；没有 hidden model dependency |
 | Human Surface projections | renderer-neutral contracts/fixtures implemented | projection semantics 与 replaceable renderer 保持分离 |
-| Canonical local Canvas | live developer renderer 已实现，并在 neutral fixture 上通过 Browser 验证 | production accessibility、performance、physical gesture 与 final owner acceptance 仍 open |
+| Canonical local Canvas | live developer renderer 已在 neutral fixture 上通过 1280×720 desktop 与 390×844 mobile Browser 验证，并包含一条 bounded keyboard/text/ARIA path | complete keyboard、screen-reader、forced-color、performance、physical gesture 与 final owner acceptance 仍 open |
 | CLI / stable refs | source-linked developer path implemented | 通用 binary/package distribution 未完成 |
 | Codex Skill / installer | transactional local install implemented | fresh task 才 discovery；其他 runtime 未 packaged |
 | Local service | loopback foreground + detached lifecycle implemented | detached manager 抗 terminal close，不承诺 reboot/login；无 remote identity |
@@ -22,14 +22,15 @@ Espalier 是 developer preview 与 local dogfood candidate，不是 finished pub
 | Export/restore | empty-domain path implemented + tests | 显式 confirmation + graph revalidation |
 | Scale projection fixtures | 500/5,000-object headless stress | 不是 Browser/GPU production performance evidence |
 | Real dogfood | 首次 bounded single-agent checkpoint/handoff 已观察 | fresh-session、second agent、parallel/Lane pressure 与长任务 metrics 仍 open |
-| CI/public-surface foundation | initial public HEAD 已通过 hosted Node 24/26、public profile、coverage 与 exact-commit review gates | required branch policy 对后续 public update 继续执行同一组 gates；绿色 CI 不是 product acceptance |
+| CI/public-surface foundation | Required CI 在精确 Node 24.0.0/npm 11.19.1 与 Node 26、public profile、coverage、desktop Chromium mutation/SSE、mobile Chromium keyboard/semantic、Ubuntu/macOS managed lifecycle 及 exact-commit review-bundle gates 之间绑定 source 与 merge-candidate identity | 每次 PR head 变化后都须在 merge 前通过 strict/up-to-date `Espalier / required`；绿色 CI 不等于 release、deployment 或 product acceptance |
+| Code scanning | GitHub-managed CodeQL default setup 已配置 JavaScript/TypeScript；initial public-main 与 PR #8 candidate analyses 均已通过 | 该 setting 位于 source tree 之外，不替代 `Espalier / required`、release 或 owner gates |
 | Public source repository | 已于 2026-08-27 作为 owner-authorized clean source projection 发布 | 不声称已有 tagged product release 或通用 packaged distribution |
 
 ## Open product gates
 
 1. 在不 replay full report 的前提下证明 fresh-session recovery 与第二个 participating agent。
 2. 真实跑 parallel Claims、Relations、Batch/Lane return pressure、ordinary conversational correction 与更长任务。
-3. 完成 canonical Canvas 的 keyboard/screen-reader/forced-color/physical-gesture/performance evidence，并获得 owner product/aesthetic acceptance。
+3. 完成 canonical Canvas 的 full-keyboard、screen-reader、forced-color、physical-gesture 与 performance evidence，并获得 owner product/aesthetic acceptance。
 4. 任何 non-loopback / mutually untrusted principal 部署前实现 authenticated identity + TLS。
 5. 只在 concrete consumer 存在时添加 scheduled retention、attachment storage、cross-device personal continuity 与 packaged distribution。
 6. 每次后续 public update 继续执行相同的 clean-tree privacy/secret/rights 与 exact-commit CI gates；tagged product release 与 source publication 保持分离。

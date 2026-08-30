@@ -10,24 +10,28 @@ permissions:
   contents: read
 
 concurrency:
-  group: espalier-ci-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: >-
+    espalier-ci-${{ github.event_name == 'pull_request'
+      && format('pr-{0}', github.event.pull_request.number)
+      || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  TEST_SHA: ${{ github.sha }}
   BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
 
 jobs:
   verify:
     name: Espalier / verify (Node ${{ matrix.label }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
         include:
-          - node: 24.x
-            label: "24"
+          - node: 24.0.0
+            label: "24.0.0"
             primary: true
           - node: 26.x
             label: "26"
@@ -36,7 +40,7 @@ jobs:
       - name: Check out the tested commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ env.TESTED_SHA }}
+          ref: ${{ env.TEST_SHA }}
           fetch-depth: 0
           persist-credentials: false
       - name: Set up Node.js
@@ -44,15 +48,17 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: npm
+      - name: Install the supported npm version
+        uses: ./.github/actions/setup-npm
       - name: Install the locked dependency graph
         run: npm ci --include=dev
       - name: Reject whitespace errors in the tested range
         shell: bash
         run: |
           if [[ "${BASE_SHA}" =~ ^[0-9a-f]{40}$ ]] && [[ ! "${BASE_SHA}" =~ ^0+$ ]] && git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
-            git diff --check "${BASE_SHA}...${TESTED_SHA}"
+            git diff --check "${BASE_SHA}...${SOURCE_SHA}"
           else
-            git diff-tree --check --root --no-commit-id -r "${TESTED_SHA}"
+            git diff-tree --check --root --no-commit-id -r "${SOURCE_SHA}"
           fi
       - name: Type-check
         run: npm run typecheck
@@ -85,19 +91,21 @@ jobs:
 
   architecture:
     name: Espalier / architecture
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Check out the tested commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ env.TESTED_SHA }}
+          ref: ${{ env.TEST_SHA }}
           persist-credentials: false
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24.x
+          node-version: 24.0.0
           cache: npm
+      - name: Install the supported npm version
+        uses: ./.github/actions/setup-npm
       - name: Install the locked dependency graph
         run: npm ci --include=dev
       - name: Run type-aware ESLint
@@ -107,32 +115,43 @@ jobs:
 
   public-surface:
     name: Espalier / public-surface
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Check out the tested commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ env.TESTED_SHA }}
+          ref: ${{ env.TEST_SHA }}
           fetch-depth: 0
           persist-credentials: false
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24.x
+          node-version: 24.0.0
           cache: npm
+      - name: Install the supported npm version
+        uses: ./.github/actions/setup-npm
       - name: Install the locked dependency graph
         run: npm ci --include=dev
       - name: Check tracked artifacts, paths, commit identities, and publication state
         env:
           PUBLIC_SURFACE_BASE_SHA: ${{ env.BASE_SHA }}
+          PUBLIC_SURFACE_HEAD_SHA: ${{ env.SOURCE_SHA }}
         shell: bash
         run: |
           if [[ "${GITHUB_REPOSITORY}" == "IndelibleVivi/espalier" ]]; then
-            npm run check:public-ready
+            npm run check:public-ready -- --output artifacts/public-surface/public-surface.json
           else
-            npm run check:public-surface
+            npm run check:public-surface -- --output artifacts/public-surface/public-surface.json
           fi
+      - name: Upload the public-surface receipt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: public-surface-summary
+          path: artifacts/public-surface/public-surface.json
+          if-no-files-found: error
+          retention-days: 14
       - name: Install pinned gitleaks and actionlint binaries
         shell: bash
         run: |
@@ -147,10 +166,10 @@ jobs:
         shell: bash
         run: |
           tracked_root="$(mktemp -d "${RUNNER_TEMP}/espalier-tracked-tree.XXXXXX")"
-          git archive --format=tar "${TESTED_SHA}" | tar -xf - -C "${tracked_root}"
+          git archive --format=tar "${TEST_SHA}" | tar -xf - -C "${tracked_root}"
           "${RUNNER_TEMP}/espalier-ci-tools/gitleaks" dir "${tracked_root}" --no-banner --redact
           if [[ "${BASE_SHA}" =~ ^[0-9a-f]{40}$ ]] && [[ ! "${BASE_SHA}" =~ ^0+$ ]] && git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
-            "${RUNNER_TEMP}/espalier-ci-tools/gitleaks" git . --no-banner --redact --log-opts="${BASE_SHA}..${TESTED_SHA}"
+            "${RUNNER_TEMP}/espalier-ci-tools/gitleaks" git . --no-banner --redact --log-opts="${BASE_SHA}..${SOURCE_SHA}"
           fi
       - name: Validate workflow syntax with actionlint
         run: |
@@ -169,19 +188,21 @@ jobs:
 
   coverage:
     name: Espalier / coverage-ratchet
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Check out the tested commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ env.TESTED_SHA }}
+          ref: ${{ env.TEST_SHA }}
           persist-credentials: false
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24.x
+          node-version: 24.0.0
           cache: npm
+      - name: Install the supported npm version
+        uses: ./.github/actions/setup-npm
       - name: Install the locked dependency graph
         run: npm ci --include=dev
       - name: Enforce canonical and deterministic-contract V8 coverage ratchets
@@ -194,22 +215,122 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  browser-smoke:
+    name: Espalier / browser-smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out the tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TEST_SHA }}
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.0.0
+          cache: npm
+      - name: Install the supported npm version
+        uses: ./.github/actions/setup-npm
+      - name: Install the locked dependency graph
+        run: npm ci --include=dev
+      - name: Install the required Chromium runtime
+        run: npx playwright install --with-deps chromium
+      - name: Build the canonical live Canvas
+        run: npm run build -w @espalier/web
+      - name: Exercise desktop mutation and mobile keyboard paths in Chromium
+        run: npm run smoke:browser
+      - name: Upload the browser machine receipt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: browser-summary
+          path: artifacts/browser-smoke/browser-summary.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload browser failure diagnostics
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: browser-failure-${{ env.TEST_SHA }}
+          path: |
+            artifacts/browser-smoke/browser-console-*.json
+            artifacts/browser-smoke/browser-*-summary.json
+            artifacts/browser-smoke/playwright-results.json
+            artifacts/browser-smoke/service.log
+            artifacts/browser-smoke/test-results
+          if-no-files-found: warn
+          retention-days: 7
+
+  managed-service:
+    name: Espalier / managed-service (${{ matrix.label }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: ubuntu
+            runner: ubuntu-24.04
+          - label: macos
+            runner: macos-15
+    steps:
+      - name: Check out the tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TEST_SHA }}
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.0.0
+          cache: npm
+      - name: Install the supported npm version
+        uses: ./.github/actions/setup-npm
+      - name: Install the locked dependency graph
+        run: npm ci --include=dev
+      - name: Build the supported source/runtime path
+        run: npm run build
+      - name: Exercise seed, start, status, restart, stop, and cleanup
+        env:
+          ESPALIER_CI_PLATFORM_LABEL: ${{ matrix.label }}
+        run: npm run smoke:managed-service
+      - name: Upload the managed-service machine receipt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: managed-service-summary-${{ matrix.label }}
+          path: artifacts/managed-service/managed-service-${{ matrix.label }}.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload managed-service failure diagnostics
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: managed-service-failure-${{ matrix.label }}-${{ env.TEST_SHA }}
+          path: artifacts/managed-service/managed-service-${{ matrix.label }}.log
+          if-no-files-found: warn
+          retention-days: 7
+
   review-bundle:
     name: Espalier / review-bundle
-    needs: [verify, architecture, public-surface, coverage]
-    runs-on: ubuntu-latest
+    needs: [verify, architecture, public-surface, coverage, browser-smoke, managed-service]
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Check out the tested commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ env.TESTED_SHA }}
+          ref: ${{ env.TEST_SHA }}
+          fetch-depth: 0
           persist-credentials: false
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24.x
+          node-version: 24.0.0
           cache: npm
+      - name: Install the supported npm version
+        uses: ./.github/actions/setup-npm
       - name: Install the locked dependency graph
         run: npm ci --include=dev
       - name: Download test receipts
@@ -223,24 +344,50 @@ jobs:
         with:
           name: coverage-summary
           path: artifacts/ci-inputs/coverage
+      - name: Download the public-surface receipt
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: public-surface-summary
+          path: artifacts/ci-inputs/public-surface
+      - name: Download the browser receipt
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: browser-summary
+          path: artifacts/ci-inputs/browser
+      - name: Download the managed-service receipts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: managed-service-summary-*
+          path: artifacts/ci-inputs/managed-service
+          merge-multiple: true
       - name: Create and reopen the exact-commit review bundle
         shell: bash
         env:
-          CI_REQUIRED_JOBS_JSON: '{"verify":"${{ needs.verify.result }}","architecture":"${{ needs.architecture.result }}","public-surface":"${{ needs.public-surface.result }}","coverage":"${{ needs.coverage.result }}"}'
+          CI_REQUIRED_JOBS_JSON: '{"verify":"${{ needs.verify.result }}","architecture":"${{ needs.architecture.result }}","public-surface":"${{ needs.public-surface.result }}","coverage":"${{ needs.coverage.result }}","browser-smoke":"${{ needs.browser-smoke.result }}","managed-service":"${{ needs.managed-service.result }}"}'
         run: |
           review_args=(
-            --commit "${TESTED_SHA}"
+            --commit "${TEST_SHA}"
+            --source-head "${SOURCE_SHA}"
+            --event "${GITHUB_EVENT_NAME}"
             --output-dir artifacts/review-bundle
             --coverage-summary artifacts/ci-inputs/coverage/coverage-summary.json
+            --public-surface-summary artifacts/ci-inputs/public-surface/public-surface.json
+            --browser-summary artifacts/ci-inputs/browser/browser-summary.json
           )
+          if [[ "${BASE_SHA}" =~ ^[0-9a-f]{40}$ ]] && [[ ! "${BASE_SHA}" =~ ^0+$ ]] && git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            review_args+=(--source-base "${BASE_SHA}")
+          fi
           for summary in artifacts/ci-inputs/tests/*.json; do
             review_args+=(--test-summary "${summary}")
+          done
+          for summary in artifacts/ci-inputs/managed-service/*.json; do
+            review_args+=(--managed-service-summary "${summary}")
           done
           npm run review:bundle -- "${review_args[@]}"
       - name: Upload the exact-commit review bundle
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: espalier-review-${{ env.TESTED_SHA }}
+          name: espalier-review-${{ env.TEST_SHA }}
           path: artifacts/review-bundle/*
           if-no-files-found: error
           retention-days: 30
@@ -248,8 +395,8 @@ jobs:
   required:
     name: Espalier / required
     if: ${{ always() }}
-    needs: [verify, architecture, public-surface, coverage, review-bundle]
-    runs-on: ubuntu-latest
+    needs: [verify, architecture, public-surface, coverage, browser-smoke, managed-service, review-bundle]
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Require every blocking CI lane
@@ -259,8 +406,10 @@ jobs:
           ARCHITECTURE_RESULT: ${{ needs.architecture.result }}
           PUBLIC_SURFACE_RESULT: ${{ needs.public-surface.result }}
           COVERAGE_RESULT: ${{ needs.coverage.result }}
+          BROWSER_SMOKE_RESULT: ${{ needs.browser-smoke.result }}
+          MANAGED_SERVICE_RESULT: ${{ needs.managed-service.result }}
           REVIEW_BUNDLE_RESULT: ${{ needs.review-bundle.result }}
         run: |
-          for result in "${VERIFY_RESULT}" "${ARCHITECTURE_RESULT}" "${PUBLIC_SURFACE_RESULT}" "${COVERAGE_RESULT}" "${REVIEW_BUNDLE_RESULT}"; do
+          for result in "${VERIFY_RESULT}" "${ARCHITECTURE_RESULT}" "${PUBLIC_SURFACE_RESULT}" "${COVERAGE_RESULT}" "${BROWSER_SMOKE_RESULT}" "${MANAGED_SERVICE_RESULT}" "${REVIEW_BUNDLE_RESULT}"; do
             [[ "${result}" == "success" ]] || exit 1
           done

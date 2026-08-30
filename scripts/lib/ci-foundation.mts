@@ -16,11 +16,17 @@ export interface PublicSurfaceEntry {
 }
 
 export type PublicSurfaceProfile = "incubator" | "public";
+export type PublicSurfaceCheck = "paths" | "text_privacy" | "publication_state" | "commit_identities";
 
 export interface PublicSurfaceFinding {
   path: string;
   reason: string;
+  check: PublicSurfaceCheck;
 }
+
+export type CommitIdentityRole = "author" | "committer";
+
+const OWNER_PUBLIC_NOREPLY_EMAIL = "184336378+indeliblevivi@users.noreply.github.com";
 
 export function validateSkillMarkdown(filePath: string, content: string): SkillValidationResult {
   const errors: string[] = [];
@@ -136,48 +142,48 @@ export function scanPublicSurface(entries: PublicSurfaceEntry[], profile: Public
 
   for (const entry of entries) {
     const normalizedPath = entry.path.replace(/\\/g, "/");
-    if (entry.symbolicLink) findings.push({ path: normalizedPath, reason: "tracked symbolic links are not portable public-source artifacts" });
+    if (entry.symbolicLink) findings.push({ path: normalizedPath, reason: "tracked symbolic links are not portable public-source artifacts", check: "paths" });
     for (const [pattern, reason] of forbiddenPaths) {
       if (normalizedPath === ".env.example" && pattern.source.includes("env")) continue;
-      if (pattern.test(normalizedPath)) findings.push({ path: normalizedPath, reason });
+      if (pattern.test(normalizedPath)) findings.push({ path: normalizedPath, reason, check: "paths" });
     }
-    if (entry.content.byteLength > 1_000_000) findings.push({ path: normalizedPath, reason: `tracked file exceeds 1,000,000 bytes (${entry.content.byteLength})` });
+    if (entry.content.byteLength > 1_000_000) findings.push({ path: normalizedPath, reason: `tracked file exceeds 1,000,000 bytes (${entry.content.byteLength})`, check: "paths" });
 
     const hasNul = entry.content.includes(0);
     if (hasNul) {
       const dot = normalizedPath.lastIndexOf(".");
       const extension = dot >= 0 ? normalizedPath.slice(dot).toLowerCase() : "";
-      if (!allowedBinaryExtensions.has(extension)) findings.push({ path: normalizedPath, reason: "unexpected binary file is tracked" });
+      if (!allowedBinaryExtensions.has(extension)) findings.push({ path: normalizedPath, reason: "unexpected binary file is tracked", check: "paths" });
       continue;
     }
 
     const text = entry.content.toString("utf8");
     for (const match of text.matchAll(/\/(?:Users|home)\/([A-Za-z0-9._-]+)(?=\/|\b)/g)) {
-      findings.push({ path: normalizedPath, reason: `machine-specific home path exposes local account '${match[1]}'` });
+      findings.push({ path: normalizedPath, reason: `machine-specific home path exposes local account '${match[1]}'`, check: "text_privacy" });
     }
     for (const match of text.matchAll(/[A-Za-z]:\\Users\\([^\\\s]+)/gi)) {
-      findings.push({ path: normalizedPath, reason: `machine-specific Windows path exposes local account '${match[1]}'` });
+      findings.push({ path: normalizedPath, reason: `machine-specific Windows path exposes local account '${match[1]}'`, check: "text_privacy" });
     }
     const generatedDependencyMetadata = /(^|\/)(?:package-lock|npm-shrinkwrap)[.]json$/i.test(normalizedPath);
     if (!generatedDependencyMetadata) {
       for (const match of text.matchAll(/[A-Z0-9._%+-]+@([A-Z0-9.-]+\.[A-Z]{2,})/gi)) {
         const domain = (match[1] ?? "").toLowerCase();
-        if (!isAllowedPublicEmailDomain(domain)) findings.push({ path: normalizedPath, reason: `email address uses non-public domain '${domain}'` });
+        if (!isAllowedPublicEmailDomain(domain)) findings.push({ path: normalizedPath, reason: `email address uses non-public domain '${domain}'`, check: "text_privacy" });
       }
     }
     for (const match of text.matchAll(/\b(?:[a-z0-9-]+\.)+(local|internal|lan)\b/gi)) {
-      findings.push({ path: normalizedPath, reason: `private hostname is embedded in tracked text ('${match[0]}')` });
+      findings.push({ path: normalizedPath, reason: `private hostname is embedded in tracked text ('${match[0]}')`, check: "text_privacy" });
     }
     if (profile === "public") {
-      if (/\bprivate GitHub repository\b/i.test(text)) findings.push({ path: normalizedPath, reason: "public profile still describes the repository as private" });
-      if (/\|\s*Public repository\s*\|\s*(?:Not released|未\s*release)\s*\|/i.test(text)) {
-        findings.push({ path: normalizedPath, reason: "public profile still marks the public repository as unpublished" });
+      if (/\bprivate GitHub repository\b/i.test(text)) findings.push({ path: normalizedPath, reason: "public profile still describes the repository as private", check: "publication_state" });
+      if (/^\|\s*Public(?: source)? repository\s*\|\s*(?:Not released\b|未\s*release\b)[^|]*\|/im.test(text)) {
+        findings.push({ path: normalizedPath, reason: "public profile still marks the public repository as unpublished", check: "publication_state" });
       }
       if (/\bPublication still requires\b/i.test(text) || /\bProduce a clean public tree\b/i.test(text) || /生成\s+clean public tree/i.test(text)) {
-        findings.push({ path: normalizedPath, reason: "public profile still describes initial publication as a future gate" });
+        findings.push({ path: normalizedPath, reason: "public profile still describes initial publication as a future gate", check: "publication_state" });
       }
       if (/\bHosted Node 24\/26 first run\b/i.test(text)) {
-        findings.push({ path: normalizedPath, reason: "public profile still describes hosted CI as an unrun gate" });
+        findings.push({ path: normalizedPath, reason: "public profile still describes hosted CI as an unrun gate", check: "publication_state" });
       }
     }
   }
@@ -189,10 +195,30 @@ function isAllowedPublicEmailDomain(domain: string): boolean {
   return domain === "example.com" || domain === "example.org" || domain === "users.noreply.github.com" || domain === "noreply.github.com";
 }
 
+export function validatePublicCommitIdentity(role: CommitIdentityRole, name: string | undefined, email: string | undefined): string[] {
+  const errors: string[] = [];
+  if (!name?.trim()) errors.push(`${role} name is empty`);
+  else if (containsControlCharacters(name)) errors.push(`${role} name contains control characters`);
+
+  if (!email || !/^(?:[^@]+@users[.]noreply[.]github[.]com|noreply@github[.]com)$/i.test(email)) {
+    errors.push(`${role} email is not a GitHub noreply identity`);
+  } else if (email.toLowerCase() === OWNER_PUBLIC_NOREPLY_EMAIL && !/^(?:Faye|Faye Fang)$/.test(name ?? "")) {
+    errors.push(`${role} name does not use the established owner attribution`);
+  }
+  return errors;
+}
+
+function containsControlCharacters(value: string): boolean {
+  return [...value].some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint >= 0x7f && codePoint <= 0x9f;
+  });
+}
+
 function deduplicateFindings(findings: PublicSurfaceFinding[]): PublicSurfaceFinding[] {
   const seen = new Set<string>();
   return findings.filter((finding) => {
-    const key = `${finding.path}\u0000${finding.reason}`;
+    const key = `${finding.check}\u0000${finding.path}\u0000${finding.reason}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;

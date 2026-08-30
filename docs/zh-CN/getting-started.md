@@ -6,7 +6,7 @@
 
 ## 1. 安装并启动本地 service
 
-要求：Node.js 24+、npm 11+、macOS 或 Linux。
+要求：Node.js 24.0.0+、npm 11.19.1+（repo pin npm 11.19.1）、macOS 或 Linux。
 
 ```bash
 git clone https://github.com/IndelibleVivi/espalier.git
@@ -41,7 +41,7 @@ npm run install:codex -- --dry-run
 npm run install:codex
 ```
 
-这个 source-linked developer installer 会同时安装 `espalier` CLI 与 canonical Skill，旧 Skill 进入本地 backup，当前副本写入 digest manifest。安装后打开一个新的 Codex task，让 Skill discovery 重新加载。
+这个 source-linked developer installer 会同时安装 `espalier` CLI 与 canonical Skill，旧 Skill 进入本地 backup，当前副本写入 digest manifest。Launcher 会独立解析已安装的 source tree，不受 caller repo 的 TypeScript path aliases 污染。安装后打开一个新的 Codex task，让 Skill discovery 重新加载。
 
 Enroll 真实项目之前先验证：
 

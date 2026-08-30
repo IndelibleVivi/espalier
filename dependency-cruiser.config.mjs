@@ -26,8 +26,15 @@ export default {
       name: "sqlite-only-through-store",
       severity: "error",
       comment: "Production SQLite access belongs only to the canonical Store.",
-      from: { path: "^(?:packages|apps)/", pathNot: "(?:packages/core/src/store[.]ts|[.](?:test|spec)[.]tsx?$)" },
+      from: { path: "^(?:packages|apps|local-dogfood)/", pathNot: "(?:packages/core/src/store[.]ts|[.](?:test|spec)[.]tsx?$)" },
       to: { path: "^(?:node:)?sqlite$", dependencyTypes: ["core"] },
+    },
+    {
+      name: "formal-code-does-not-depend-on-local-dogfood",
+      severity: "error",
+      comment: "Private project dogfood may consume formal contracts, but formal apps and packages never depend on it.",
+      from: { path: "^(?:packages|apps)/" },
+      to: { path: "^local-dogfood/" },
     },
     {
       name: "web-cannot-import-canonical-writer-or-node",

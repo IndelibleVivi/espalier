@@ -6,7 +6,7 @@ This guide takes a technically capable first-time user from a source checkout to
 
 ## 1. Install and start the local service
 
-Requirements: Node.js 24+, npm 11+, macOS or Linux.
+Requirements: Node.js 24.0.0+, npm 11.19.1+ (the repository pins npm 11.19.1), macOS or Linux.
 
 ```bash
 git clone https://github.com/IndelibleVivi/espalier.git
@@ -41,7 +41,7 @@ npm run install:codex -- --dry-run
 npm run install:codex
 ```
 
-This source-linked developer installer does two coordinated things: it links the `espalier` CLI and installs the canonical Skill under the current Codex home. It preserves the previous Skill copy in a local backup and writes a digest manifest. Open a fresh Codex task after installation so Skill discovery reloads.
+This source-linked developer installer does two coordinated things: it links the `espalier` CLI and installs the canonical Skill under the current Codex home. It preserves the previous Skill copy in a local backup and writes a digest manifest. The launcher resolves the installed source tree independently of the caller repository's TypeScript path aliases. Open a fresh Codex task after installation so Skill discovery reloads.
 
 Verify the CLI before enrolling real work:
 

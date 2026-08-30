@@ -70,8 +70,8 @@ The complete command and projection contracts live in [`packages/protocol`](pack
 
 Requirements:
 
-- Node.js 24 or newer;
-- npm 11 or newer;
+- Node.js 24.0.0 or newer;
+- npm 11.19.1 or newer (the repository and CI pin npm 11.19.1);
 - macOS or Linux;
 - no hosted database, model API key, or third-party account.
 
@@ -89,6 +89,8 @@ Open <http://127.0.0.1:4317/> in a browser. The neutral Orchard seed is syntheti
 
 The Web app is the canonical local live Canvas reader over the real Human Surface projection contract. It discovers the sole Project owned by the service (or accepts `?project=<id>` when several are present), keeps source-authored content unchanged across `EN / 中文`, and stores camera/selection/collapse as local view state. It is a developer renderer, not a claim of production accessibility, performance, or final visual acceptance.
 
+The supported application tree is deliberately small: `apps/cli`, `apps/server`, and `apps/web`. Historical UI experiments are not shipped as alternate modes or compatibility frontends.
+
 ## Install the Codex harness
 
 The repository contains both halves of the local Codex integration:
@@ -103,7 +105,7 @@ npm run install:codex -- --dry-run
 npm run install:codex
 ```
 
-The installer links the source CLI and transactionally installs the Skill under the current Codex home, preserving the previous copy in a backup and writing a file-digest manifest. Open a fresh Codex task after installation so Skill discovery reloads.
+The installer links the source CLI and transactionally installs the Skill under the current Codex home, preserving the previous copy in a backup and writing a file-digest manifest. The linked CLI resolves its own source workspace when invoked from another repository; caller-local TypeScript path aliases do not change its dependencies. Open a fresh Codex task after installation so Skill discovery reloads.
 
 ## Enroll a project
 
@@ -224,10 +226,13 @@ See [Public status](docs/status.md) for a concise current capability/limitation 
 npm run check
 npm run test:coverage
 npm run smoke:process
+npx playwright install chromium
+npm run smoke:browser
+npm run smoke:managed-service
 npm run stress:scale-replay
 ```
 
-`npm run check` includes typecheck, type-aware lint, package-boundary validation, all tests, the Web build, canonical Skill validation, and the tracked public-surface guard. GitHub Actions adds Node 24/26 lanes, pinned workflow tooling, secret scanning, workflow audits, canonical/deterministic-contract coverage receipts, and exact-commit review bundles. React renderer acceptance remains a separate rendered-Browser gate; it is not misrepresented as Node unit coverage. A green source or CI gate is engineering evidence; it is not release, deployment, or owner acceptance.
+`npm run check` includes typecheck, type-aware lint, package-boundary validation, all tests, the Web build, canonical Skill validation, and the tracked public-surface guard. GitHub Actions tests the exact Node 24.0.0 floor and the current Node 26 line with npm 11.19.1, rejects unreviewed dependency install scripts, runs pinned public-surface/security tooling, and records canonical/deterministic-contract coverage plus exact-commit review receipts. Required runtime evidence exercises a real seeded Orchard Canvas in Chromium: the 1280×720 desktop profile performs a token-authenticated mutation and SSE refresh, while the 390×844 mobile profile follows a real keyboard path through locale controls, Canvas selection, and Inspector close with text/ARIA state semantics. The managed `seed → start → status → restart → stop` lifecycle runs on Ubuntu and macOS. The public repository separately uses GitHub-managed CodeQL default setup for JavaScript/TypeScript; it is a repository setting, not a duplicate workflow in this tree. These browser/runtime checks prove only the named contract; they do not replace complete keyboard, screen-reader, forced-color, performance, visual, release, deployment, or owner acceptance evidence.
 
 ## Licensing
 

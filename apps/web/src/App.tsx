@@ -126,7 +126,7 @@ function LiveProjectSurface({ projectId, displayName }: { projectId: string; dis
   if (!projection || !layout) return <div className="boot-screen"><div className="brand-lockup"><span>Espalier</span><b>{projectId.toUpperCase()}</b></div><p>{error ?? (locale === "zh" ? "正在读取 live session…" : "Reading the live session…")}</p>{error ? <button type="button" onClick={() => void refresh()}>{locale === "zh" ? "重试" : "Retry"}</button> : null}</div>;
   const programmeAnchorTitle = layout.home_anchor_route ? displayRouteTitle(layout.home_anchor_route.route, locale) : "—";
   return (
-    <div className="live-shell" data-locale={locale} data-connection={connection}>
+    <div className="live-shell" data-testid="live-shell" data-locale={locale} data-connection={connection}>
       <header className="flight-bar">
         <div className="brand-lockup"><span>Espalier</span><b>{projectId.toUpperCase()}</b></div>
         <div className="flight-purpose"><strong>{displayName} {text.title}</strong><span>{text.subtitle}</span></div>
@@ -136,7 +136,7 @@ function LiveProjectSurface({ projectId, displayName }: { projectId: string; dis
           <span><b>{layout.diagnostics.lane_count}</b> {text.lanes}</span>
           <span><b>{layout.diagnostics.owner_attention_count}</b> {text.ownerCalls}</span>
           {projection.delta.changed_refs.length > 0 && projection.delta.mark_seen_capability?.allowed ? <button type="button" className="mark-seen" onClick={markSeen}><b>{projection.delta.changed_refs.length}</b> {text.changes} · {text.markSeen}</button> : null}
-          <span className={`connection ${connection}`}><i aria-hidden="true" />{connection === "live" ? text.live : text.stale} · r{projection.as_of_revision}</span>
+          <span className={`connection ${connection}`} role="status"><i aria-hidden="true" />{connection === "live" ? text.live : text.stale} · r{projection.as_of_revision}</span>
         </div>
         <div className="flight-actions">
           <button

@@ -14,8 +14,8 @@ concurrency:
 
 jobs:
   dependency-audit:
-    name: Espalier / dependency-audit report
-    runs-on: ubuntu-latest
+    name: Espalier / dependency-audit
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Check out main
@@ -25,25 +25,39 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24.x
+          node-version: 24.0.0
           cache: npm
+      - name: Install the supported npm version
+        uses: ./.github/actions/setup-npm
       - name: Install the locked dependency graph
+        id: install
         run: npm ci --include=dev
-      - name: Record high-severity production dependency findings
-        id: audit
-        shell: bash
+      - name: Audit the production dependency graph
         run: |
           mkdir -p artifacts/dependency-audit
-          set +e
-          npm audit --omit=dev --audit-level=high --json > artifacts/dependency-audit/npm-audit.json
-          audit_exit=$?
-          set -e
-          echo "exit-code=${audit_exit}" >> "${GITHUB_OUTPUT}"
-          echo "npm audit report exit code: ${audit_exit}" >> "${GITHUB_STEP_SUMMARY}"
-      - name: Upload the non-blocking audit report
+          npm audit --omit=dev --audit-level=high --json > artifacts/dependency-audit/npm-production-audit.json
+      - name: Upload the production audit receipt
+        if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: npm-production-audit
-          path: artifacts/dependency-audit/npm-audit.json
+          path: artifacts/dependency-audit/npm-production-audit.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Record the informational development dependency audit
+        if: ${{ always() && steps.install.outcome == 'success' }}
+        shell: bash
+        run: |
+          set +e
+          npm audit --include=dev --json > artifacts/dependency-audit/npm-development-audit.json
+          audit_exit=$?
+          set -e
+          echo "Development dependency audit exit code: ${audit_exit}" >> "${GITHUB_STEP_SUMMARY}"
+      - name: Upload the development audit receipt
+        if: ${{ always() && steps.install.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: npm-development-audit
+          path: artifacts/dependency-audit/npm-development-audit.json
           if-no-files-found: error
           retention-days: 30
