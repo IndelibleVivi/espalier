@@ -41,10 +41,12 @@ Use the narrow relevant test during implementation, then run the blast-radius-ap
 npm run check
 npm run test:coverage
 npm run smoke:process
+npm run smoke:browser
+npm run smoke:managed-service
 npm run stress:scale-replay
 ```
 
-Rendered Web changes additionally require a real browser pass: page identity, meaningful DOM, no framework overlay, console health, target-flow interaction, desktop/mobile behavior, keyboard/accessibility evidence, and non-color semantic review.
+Use Node.js 24.0.0+ and npm 11.19.1+; CI pins npm 11.19.1 and rejects dependency install scripts absent from `package.json#allowScripts`. Install the pinned Playwright Chromium before `smoke:browser`. Rendered Web changes additionally require a real browser pass: page identity, meaningful DOM, no framework overlay, console health, target-flow interaction, desktop/mobile behavior, keyboard/accessibility evidence, and non-color semantic review.
 
 ## Documentation and publication
 

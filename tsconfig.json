@@ -23,6 +23,6 @@
       "@espalier/adapters": ["packages/adapters/src/index.ts"]
     }
   },
-  "include": ["apps/**/*.ts", "apps/**/*.tsx", "packages/**/*.ts", "scripts/**/*.ts", "scripts/**/*.mts", "vitest.config.ts"],
+  "include": ["apps/**/*.ts", "apps/**/*.tsx", "packages/**/*.ts", "scripts/**/*.ts", "scripts/**/*.mts", "tests/**/*.ts", "local-dogfood/**/*.ts", "playwright.config.ts", "vitest.config.ts"],
   "exclude": ["node_modules", "dist"]
 }

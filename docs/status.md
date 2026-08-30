@@ -2,7 +2,7 @@
 
 [简体中文](zh-CN/status.md) · English
 
-Last reviewed: 2026-08-28.
+Last reviewed: 2026-08-30.
 
 Espalier is a developer preview and local dogfood candidate, not a finished public release. “Implemented,” “locally verified,” “packaged,” “installed,” “running,” “published,” and “owner accepted” are separate states.
 
@@ -22,7 +22,8 @@ Espalier is a developer preview and local dogfood candidate, not a finished publ
 | Export/restore | Implemented and tested for an empty authority domain | Restore requires explicit confirmation and graph revalidation |
 | Scale projection fixtures | 500/5,000-object headless contract stress implemented | Not Browser/GPU production performance evidence |
 | Real dogfood | First bounded single-agent checkpoint/handoff loop observed | Fresh-session, second-agent, parallel/Lane pressure, and longer-task metrics remain open |
-| CI/public-surface foundation | Hosted Node 24/26, public profile, coverage, and exact-commit review gates passed on the initial public HEAD | Required branch policy applies the same gates to future public updates; green CI is not product acceptance |
+| CI/public-surface foundation | Initial public HEAD passed the hosted Node 24/26, public profile, coverage, and exact-commit review gates; a source-only hardening candidate adds exact Node 24.0.0/npm 11.19.1, required Chromium and Ubuntu/macOS lifecycle receipts, and fail-closed install/audit policy | The candidate is not a hosted/public receipt until its exported commit passes those gates; green CI is not product acceptance |
+| Code scanning | GitHub-managed CodeQL default setup is configured for JavaScript/TypeScript; its initial analysis passed on public HEAD `65caaf6` | The setting is external to this source tree and does not replace `Espalier / required` or release/owner gates |
 | Public source repository | Published as an authorized clean source projection on 2026-08-27 | No tagged product release or general packaged distribution is claimed |
 
 ## Open product gates

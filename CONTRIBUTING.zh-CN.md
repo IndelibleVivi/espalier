@@ -11,6 +11,8 @@ Espalier 仍处于 developer preview。提出 source change 前，请先阅读[�
 - Geometry、camera、locale、density 与 personal layout 不得进入 canonical project state。
 - 不要为了让 demo 更顺而削弱 loopback、stale-write、Claim、owner-policy、Decision、budget、export/restore 或 migration 检查。
 - 不要包含私人项目数据、raw export、本地绝对路径、credential、private handoff 或非公开项目截图。
+- 提交前把 Git 配置为 GitHub 提供的 noreply email。Public CI 接受 contributor 自己的姓名，但会拒绝个人、工作单位与本机 commit email address。
+- 不要用绕过 `strict-allow-scripts`、`--force`、`--legacy-peer-deps` 或放宽 `allowScripts` 的方式让 dependency update 暂时可安装；每个 dependency script authorization 都必须 review 并 pin。
 - Supported public contract 改变时，同时更新 English 与中文 user-facing docs。
 
 ## 本地 gate
@@ -20,10 +22,13 @@ npm ci
 npm run check
 npm run test:coverage
 npm run smoke:process
+npx playwright install chromium
+npm run smoke:browser
+npm run smoke:managed-service
 npm run stress:scale-replay
 ```
 
-施工时先跑最窄相关 test，再跑与 blast radius 匹配的完整 gate。Rendered Web change 还需要真实 browser 的 desktop/mobile 检查、meaningful DOM、console health、target-flow interaction、keyboard/accessibility evidence 与 non-color semantic review。
+使用 Node.js 24.0.0 或更新版本与 npm 11.19.1 或更新版本；CI 会安装 repo pin 的 npm 11.19.1。施工时先跑最窄相关 test，再跑与 blast radius 匹配的完整 gate。`smoke:browser` 不会自己安装 browser，因此 `npm ci` 后需要先安装一次 pinned Chromium。Rendered Web change 还需要真实 browser 的 desktop/mobile 检查、meaningful DOM、console health、target-flow interaction、keyboard/accessibility evidence 与 non-color semantic review。
 
 ## Change shape
 

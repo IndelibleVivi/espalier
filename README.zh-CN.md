@@ -70,8 +70,8 @@ Espalier 把这些答案记录为明确、带 revision 的项目语义，再只�
 
 要求：
 
-- Node.js 24 或更新版本；
-- npm 11 或更新版本；
+- Node.js 24.0.0 或更新版本；
+- npm 11.19.1 或更新版本（repo 与 CI pin npm 11.19.1）；
 - macOS 或 Linux；
 - 不需要 hosted database、model API key 或第三方账号。
 
@@ -89,6 +89,8 @@ npm run service:status
 
 Web app 是建立在真实 Human Surface projection contract 上的 canonical local live Canvas reader。Service 仅有一个 Project 时它会自动发现；有多个时用 `?project=<id>` 显式选择。`EN / 中文` 只改 renderer chrome，source-authored content 保持原样；camera / selection / collapse 只是 local view state。这仍是 developer renderer，不代表 production accessibility、performance 或最终视觉验收已经完成。
 
+支持的 application tree 有意保持很小：`apps/cli`、`apps/server`、`apps/web`。历史 UI experiments 不会作为 alternate modes 或 compatibility frontends 一起发布。
+
 ## 安装 Codex harness
 
 Repo 同时包含本地 Codex integration 的两半：
@@ -103,7 +105,7 @@ npm run install:codex -- --dry-run
 npm run install:codex
 ```
 
-Installer 会链接 source CLI，并 transactionally 安装 Skill：旧副本进入 backup，当前副本写入带 file digests 的 manifest。安装后必须打开一个新的 Codex task，Skill discovery 才会重新加载。
+Installer 会链接 source CLI，并 transactionally 安装 Skill：旧副本进入 backup，当前副本写入带 file digests 的 manifest。Linked CLI 从其他 repo 调用时会解析自己的 source workspace，不会被 caller-local TypeScript path aliases 改写 dependencies。安装后必须打开一个新的 Codex task，Skill discovery 才会重新加载。
 
 ## Enroll 一个项目
 
@@ -224,10 +226,13 @@ Espalier 还不是 finished release。以下事项仍然开放：
 npm run check
 npm run test:coverage
 npm run smoke:process
+npx playwright install chromium
+npm run smoke:browser
+npm run smoke:managed-service
 npm run stress:scale-replay
 ```
 
-`npm run check` 包含 typecheck、type-aware lint、package-boundary validation、全部 tests、Web build、canonical Skill validation 与 tracked public-surface guard。GitHub Actions 另外运行 Node 24/26、pinned workflow tooling、secret scan、workflow audit、canonical / deterministic-contract coverage receipt 与 exact-commit review bundle。React renderer acceptance 仍是单独的 rendered-Browser gate，不会被冒充成 Node unit coverage。绿色 source/CI gate 是 engineering evidence，不等于 release、deployment 或 owner acceptance。
+`npm run check` 包含 typecheck、type-aware lint、package-boundary validation、全部 tests、Web build、canonical Skill validation 与 tracked public-surface guard。GitHub Actions 使用 npm 11.19.1 同时验证精确的 Node 24.0.0 floor 与当前 Node 26 line，拒绝未经 review 的 dependency install scripts，运行 pinned public-surface/security tooling，并记录 canonical / deterministic-contract coverage 与 exact-commit review receipts。Required runtime evidence 还会在 Chromium 中走过真实 seeded Orchard Canvas（包括 token-authenticated mutation 与 SSE refresh），并在 Ubuntu、macOS 上验证 managed `seed → start → status → restart → stop` 生命周期。Public repository 另行使用 GitHub-managed CodeQL default setup 扫描 JavaScript/TypeScript；它是 repository setting，不是这棵 source tree 中重复维护的 workflow。这些 browser/runtime checks 只证明被命名的 contract；它们不替代 production accessibility、performance、visual、release、deployment 或 owner acceptance。
 
 ## Licensing
 
