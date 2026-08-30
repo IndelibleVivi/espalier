@@ -22,8 +22,8 @@ Espalier is a developer preview and local dogfood candidate, not a finished publ
 | Export/restore | Implemented and tested for an empty authority domain | Restore requires explicit confirmation and graph revalidation |
 | Scale projection fixtures | 500/5,000-object headless contract stress implemented | Not Browser/GPU production performance evidence |
 | Real dogfood | First bounded single-agent checkpoint/handoff loop observed | Fresh-session, second-agent, parallel/Lane pressure, and longer-task metrics remain open |
-| CI/public-surface foundation | Initial public HEAD passed the hosted Node 24/26, public profile, coverage, and exact-commit review gates; a source-only hardening candidate adds exact Node 24.0.0/npm 11.19.1, required Chromium and Ubuntu/macOS lifecycle receipts, and fail-closed install/audit policy | The candidate is not a hosted/public receipt until its exported commit passes those gates; green CI is not product acceptance |
-| Code scanning | GitHub-managed CodeQL default setup is configured for JavaScript/TypeScript; its initial analysis passed on public HEAD `65caaf6` | The setting is external to this source tree and does not replace `Espalier / required` or release/owner gates |
+| CI/public-surface foundation | Public hardening PR [#8](https://github.com/IndelibleVivi/espalier/pull/8) has produced a hosted passing candidate across exact Node 24.0.0/npm 11.19.1 and Node 26, public profile, coverage, Chromium mutation/SSE, Ubuntu/macOS managed lifecycle, and exact-commit review-bundle gates | Every changed PR head must still pass the strict/up-to-date `Espalier / required` context before merge; green CI is not a release, deployment, or product acceptance |
+| Code scanning | GitHub-managed CodeQL default setup is configured for JavaScript/TypeScript; the initial public-main and PR #8 candidate analyses have passed | The setting is external to this source tree and does not replace `Espalier / required` or release/owner gates |
 | Public source repository | Published as an authorized clean source projection on 2026-08-27 | No tagged product release or general packaged distribution is claimed |
 
 ## Open product gates

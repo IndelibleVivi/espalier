@@ -22,8 +22,8 @@ Espalier 是 developer preview 与 local dogfood candidate，不是 finished pub
 | Export/restore | empty-domain path implemented + tests | 显式 confirmation + graph revalidation |
 | Scale projection fixtures | 500/5,000-object headless stress | 不是 Browser/GPU production performance evidence |
 | Real dogfood | 首次 bounded single-agent checkpoint/handoff 已观察 | fresh-session、second agent、parallel/Lane pressure 与长任务 metrics 仍 open |
-| CI/public-surface foundation | initial public HEAD 已通过 hosted Node 24/26、public profile、coverage 与 exact-commit review gates；source-only hardening candidate 新增精确 Node 24.0.0/npm 11.19.1、required Chromium 与 Ubuntu/macOS lifecycle receipts，以及 fail-closed install/audit policy | Candidate 的 exported commit 通过这些 gates 前，不构成 hosted/public receipt；绿色 CI 不是 product acceptance |
-| Code scanning | GitHub-managed CodeQL default setup 已配置 JavaScript/TypeScript；initial analysis 已在 public HEAD `65caaf6` 通过 | 该 setting 位于 source tree 之外，不替代 `Espalier / required`、release 或 owner gates |
+| CI/public-surface foundation | Public hardening PR [#8](https://github.com/IndelibleVivi/espalier/pull/8) 已产出 hosted passing candidate：精确 Node 24.0.0/npm 11.19.1 与 Node 26、public profile、coverage、Chromium mutation/SSE、Ubuntu/macOS managed lifecycle 及 exact-commit review-bundle gates 全部通过 | 每次 PR head 变化后，仍须在 merge 前通过 strict/up-to-date `Espalier / required`；绿色 CI 不等于 release、deployment 或 product acceptance |
+| Code scanning | GitHub-managed CodeQL default setup 已配置 JavaScript/TypeScript；initial public-main 与 PR #8 candidate analyses 均已通过 | 该 setting 位于 source tree 之外，不替代 `Espalier / required`、release 或 owner gates |
 | Public source repository | 已于 2026-08-27 作为 owner-authorized clean source projection 发布 | 不声称已有 tagged product release 或通用 packaged distribution |
 
 ## Open product gates
