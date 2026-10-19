@@ -44,7 +44,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node }}
           cache: npm
@@ -82,7 +82,7 @@ jobs:
         if: ${{ !matrix.primary }}
         run: npm run smoke:process
       - name: Upload the test receipt
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-summary-node-${{ matrix.label }}
           path: artifacts/test-results/vitest-node-${{ matrix.label }}.json
@@ -100,7 +100,7 @@ jobs:
           ref: ${{ env.TEST_SHA }}
           persist-credentials: false
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24.0.0
           cache: npm
@@ -125,7 +125,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24.0.0
           cache: npm
@@ -146,7 +146,7 @@ jobs:
           fi
       - name: Upload the public-surface receipt
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: public-surface-summary
           path: artifacts/public-surface/public-surface.json
@@ -197,7 +197,7 @@ jobs:
           ref: ${{ env.TEST_SHA }}
           persist-credentials: false
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24.0.0
           cache: npm
@@ -208,7 +208,7 @@ jobs:
       - name: Enforce canonical and deterministic-contract V8 coverage ratchets
         run: npm run test:coverage
       - name: Upload the coverage receipt
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage-summary
           path: coverage/coverage-summary.json
@@ -226,7 +226,7 @@ jobs:
           ref: ${{ env.TEST_SHA }}
           persist-credentials: false
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24.0.0
           cache: npm
@@ -242,7 +242,7 @@ jobs:
         run: npm run smoke:browser
       - name: Upload the browser machine receipt
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: browser-summary
           path: artifacts/browser-smoke/browser-summary.json
@@ -250,7 +250,7 @@ jobs:
           retention-days: 14
       - name: Upload browser failure diagnostics
         if: ${{ failure() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: browser-failure-${{ env.TEST_SHA }}
           path: |
@@ -281,7 +281,7 @@ jobs:
           ref: ${{ env.TEST_SHA }}
           persist-credentials: false
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24.0.0
           cache: npm
@@ -297,7 +297,7 @@ jobs:
         run: npm run smoke:managed-service
       - name: Upload the managed-service machine receipt
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: managed-service-summary-${{ matrix.label }}
           path: artifacts/managed-service/managed-service-${{ matrix.label }}.json
@@ -305,7 +305,7 @@ jobs:
           retention-days: 14
       - name: Upload managed-service failure diagnostics
         if: ${{ failure() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: managed-service-failure-${{ matrix.label }}-${{ env.TEST_SHA }}
           path: artifacts/managed-service/managed-service-${{ matrix.label }}.log
@@ -325,7 +325,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24.0.0
           cache: npm
@@ -334,28 +334,28 @@ jobs:
       - name: Install the locked dependency graph
         run: npm ci --include=dev
       - name: Download test receipts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: test-summary-node-*
           path: artifacts/ci-inputs/tests
           merge-multiple: true
       - name: Download the coverage receipt
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: coverage-summary
           path: artifacts/ci-inputs/coverage
       - name: Download the public-surface receipt
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: public-surface-summary
           path: artifacts/ci-inputs/public-surface
       - name: Download the browser receipt
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: browser-summary
           path: artifacts/ci-inputs/browser
       - name: Download the managed-service receipts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: managed-service-summary-*
           path: artifacts/ci-inputs/managed-service
@@ -385,7 +385,7 @@ jobs:
           done
           npm run review:bundle -- "${review_args[@]}"
       - name: Upload the exact-commit review bundle
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: espalier-review-${{ env.TEST_SHA }}
           path: artifacts/review-bundle/*
